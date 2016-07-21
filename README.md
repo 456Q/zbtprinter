@@ -7,8 +7,12 @@ This is a fork of https://github.com/mmilidoni/zbtprinter with discovery
 You can find Zebra printer using:
 
 ```
-cordova.plugins.zbtprinter.find(function(mac) { 
-        alert(mac); 
+cordova.plugins.zbtprinter.find(function(result) { 
+        if(typeof result == 'string') {
+          alert(mac); 
+        } else {
+          alert(result.address + ', ' + result.friendlyName);
+        }
     }, function(fail) { 
         alert(fail); 
     }

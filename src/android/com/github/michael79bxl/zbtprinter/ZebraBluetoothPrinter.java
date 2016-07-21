@@ -6,6 +6,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import android.util.Log;
 import com.zebra.android.discovery.*;
 import com.zebra.sdk.comm.*;
@@ -50,9 +51,19 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
           BluetoothDiscoverer.findPrinters(this.cordova.getActivity().getApplicationContext(), new DiscoveryHandler() {
 
               public void foundPrinter(DiscoveredPrinter printer) {
-                  String macAddress = printer.address;
-                  //I found a printer! I can use the properties of a Discovered printer (address) to make a Bluetooth Connection
-                  callbackContext.success(macAddress);
+                  if(printer instanceof DiscoveredPrinterBluetooth) {
+                     JSONObject printerObj = new JSONObject();
+                     try {
+                       printerObj.put("address", printer.address);
+                       printerObj.put("friendlyName", ((DiscoveredPrinterBluetooth) printer).friendlyName);
+                       callbackContext.success(printerObj);
+                     } catch (JSONException e) {
+                     }
+                  } else {              
+                    String macAddress = printer.address;
+                    //I found a printer! I can use the properties of a Discovered printer (address) to make a Bluetooth Connection
+                    callbackContext.success(macAddress);
+                  }
               }
 
               public void discoveryFinished() {
