@@ -90,12 +90,13 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                 try {
                     // Instantiate insecure connection for given Bluetooth MAC Address.
                     //Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
-
+		      Connection thePrinterConn = new BluetoothConnection(mac);
+		      
                     // Verify the printer is ready to print
-                    //if (isPrinterReady(thePrinterConn)) {
+                     if (isPrinterReady(thePrinterConn)) {
 
                         // Open the connection - physical connection is established here.
-                        //thePrinterConn.open();
+                        thePrinterConn.open();
 
                         // Send the data to printer as a byte array.
 			// thePrinterConn.write("^XA^FO0,20^FD^FS^XZ".getBytes());
@@ -108,9 +109,9 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                         // Close the insecure connection to release resources.
                         //thePrinterConn.close();
                         callbackContext.success("Done");
-                    //} else {
-			//callbackContext.error("Printer is not ready");
-			//		}
+                    } else {
+			callbackContext.error("Printer is not ready");
+				}
                 } catch (Exception e) {
                     // Handle communications error here.
                     callbackContext.error(e.getMessage());
@@ -124,9 +125,14 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
         connection.open();
         // Creates a ZebraPrinter object to use Zebra specific functionality like getCurrentStatus()
         ZebraPrinter printer = ZebraPrinterFactory.getInstance(connection);
-        PrinterStatus printerStatus = printer.getCurrentStatus();
+        ZebraPrinterLinkOs linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(connection);
+            
+        //PrinterStatus printerStatus = printer.getCurrentStatus();
+        PrinterStatus printerStatus = (linkOsPrinter != null) ? linkOsPrinter.getCurrentStatus() : printer.getCurrentStatus();
+             
         if (printerStatus.isReadyToPrint) {
             isOK = true;
+            connection.close();
         } else if (printerStatus.isPaused) {
             throw new ConnectionException("Cannot print because the printer is paused");
         } else if (printerStatus.isHeadOpen) {
@@ -136,7 +142,9 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
         } else {
             throw new ConnectionException("Cannot print");
         }
+        
         return isOK;
+        
     }
 }
 
