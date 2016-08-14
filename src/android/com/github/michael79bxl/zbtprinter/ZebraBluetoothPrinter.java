@@ -124,8 +124,8 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
         Boolean isOK = false;
         connection.open();
         // Creates a ZebraPrinter object to use Zebra specific functionality like getCurrentStatus()
-        //ZebraPrinter printer = ZebraPrinterFactory.getInstance(connection);
-        ZebraPrinterLinkOs linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(connection);
+        ZebraPrinter printer = ZebraPrinterFactory.getInstance(connection);
+        ZebraPrinterLinkOs linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer);
             
         //PrinterStatus printerStatus = printer.getCurrentStatus();
         PrinterStatus printerStatus = (linkOsPrinter != null) ? linkOsPrinter.getCurrentStatus() : printer.getCurrentStatus();
