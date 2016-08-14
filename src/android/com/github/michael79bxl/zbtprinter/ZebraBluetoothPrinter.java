@@ -102,7 +102,6 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 			// thePrinterConn.write("^XA^FO0,20^FD^FS^XZ".getBytes());
                         thePrinterConn.write(msg.getBytes());
 
-
                         // Make sure the data got to the printer before closing the connection
                         Thread.sleep(500);
 
