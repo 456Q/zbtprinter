@@ -89,8 +89,8 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
             public void run() {
                 try {
                     // Instantiate insecure connection for given Bluetooth MAC Address.
-                    //Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
-		      Connection thePrinterConn = new BluetoothConnection(mac);
+                    Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
+		    //Connection thePrinterConn = new BluetoothConnection(mac);
 		      
                     // Verify the printer is ready to print
                      if (isPrinterReady(thePrinterConn)) {
