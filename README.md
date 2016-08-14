@@ -3,7 +3,7 @@ A Cordova/Phonegap driver for Zebra bluetooth printers
 
 This is a fork of https://github.com/michael79bxl/zbtprinter with link-os support.
 
-- Updated Zebra SDK to v2.11.2800
+- Zebra SDK Updated to v2.11.2800
 - Tested with Zebra ZQ520 (ZQ500 Series)
 
 ##Usage
