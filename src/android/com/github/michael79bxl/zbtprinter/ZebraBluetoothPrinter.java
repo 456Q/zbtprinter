@@ -133,7 +133,7 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
              
         if (printerStatus.isReadyToPrint) {
             isOK = true;
-            connection.close();
+            //connection.close();
         } else if (printerStatus.isPaused) {
             throw new ConnectionException("Cannot print because the printer is paused");
         } else if (printerStatus.isHeadOpen) {
