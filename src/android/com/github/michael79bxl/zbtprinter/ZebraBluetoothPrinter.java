@@ -89,8 +89,8 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
             public void run() {
                 try {
                     // Instantiate insecure connection for given Bluetooth MAC Address.
-                    Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
-		    //Connection thePrinterConn = new BluetoothConnection(mac);
+                    //Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
+		    Connection thePrinterConn = new BluetoothConnection(mac);
 		      
                     // Verify the printer is ready to print
                      if (isPrinterReady(thePrinterConn)) {
@@ -133,7 +133,7 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
              
         if (printerStatus.isReadyToPrint) {
             isOK = true;
-            //connection.close();
+            connection.close();
         } else if (printerStatus.isPaused) {
             throw new ConnectionException("Cannot print because the printer is paused");
         } else if (printerStatus.isHeadOpen) {
