@@ -133,17 +133,18 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 								}
 								Bitmap signatureBitmap = Bitmap.createScaledBitmap(bitmap, outWidth, outHeight, false);													
 								
-									 final String init = "! U1 SETVAR \"device.languages\" \"zpl\"\r\n! U1 JOURNAL\r\n! U1 SETFF 1 1\r\n! U1 setvar \"ezpl.media_type\" \"continuous\"\r\n! U1 setvar \"zpl.label_length\" \"200\"\r\n" +
+									 String init = "! U1 SETVAR \"device.languages\" \"zpl\"\r\n! U1 JOURNAL\r\n! U1 SETFF 1 1\r\n! U1 setvar \"ezpl.media_type\" \"continuous\"\r\n! U1 setvar \"zpl.label_length\" \"180\"\r\n" +
 														"^XA^POI";  
-														
+										if (imgName != "") {
+											 init += "^CFD,26,10^FO0,160^FB792,1,,C^^FD" + imgName + "^FS";										
+										}					
 									 thePrinterConn.write(init.getBytes());															
 								
 									 printer.printImage(new ZebraImageAndroid(signatureBitmap), 250, 0, -1, -1, true);
-									
-									 final String close = "^XZ\r\n" +
-														  "! U1 SETVAR \"device.languages\" \"line_print\"\r\n";
+									 
+									 String close = "^XZ\r\n! U1 SETVAR \"device.languages\" \"line_print\"\r\n";
 														  
-									thePrinterConn.write(close.getBytes());	
+									thePrinterConn.write(close.getBytes("ISO-8859-1"));	
 
 							} catch (ConnectionException e) {									
 								callbackContext.error(e.getMessage());										
@@ -187,7 +188,7 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 
                         // Send the data to printer as a byte array.
 						// thePrinterConn.write("^XA^FO0,20^FD^FS^XZ".getBytes());
-                        thePrinterConn.write(msg.getBytes());
+                        thePrinterConn.write(msg.getBytes("ISO-8859-1"));
 
                         // Make sure the data got to the printer before closing the connection
                         // Thread.sleep(500);
