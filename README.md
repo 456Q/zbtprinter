@@ -6,6 +6,9 @@ This is a fork of https://github.com/michael79bxl/zbtprinter with link-os suppor
 - Zebra SDK Updated to v2.11.2800
 - Tested with Zebra ZQ520 (ZQ500 Series)
 
+It also includes a function for image printing.
+
+
 ##Usage
 You can find Zebra printer using:
 
@@ -25,7 +28,9 @@ cordova.plugins.zbtprinter.find(function(result) {
 You can send data in ZPL Zebra Programing Language:
 
 ```
-cordova.plugins.zbtprinter.print("AC:3F:A4:1D:7A:5C", "! U1 setvar "device.languages" "line_print"\r\nTEXT ***Print test***\r\nPRINT\r\n",
+var strData = "! U1 setvar "device.languages" "line_print"\r\nTEXT ***Print test***\r\nPRINT\r\n";
+
+cordova.plugins.zbtprinter.print("AC:3F:A4:1D:7A:5C", strData,
     function(success) { 
         alert("Print ok"); 
     }, function(fail) { 
@@ -34,14 +39,28 @@ cordova.plugins.zbtprinter.print("AC:3F:A4:1D:7A:5C", "! U1 setvar "device.langu
 );
 ```
 
+Or send base64 encoded image to the printer:
+
+```
+var imgData = "data:image/png;base64,xxxxyyyyzzzz=";
+imgData = imgData.replace("data:image/png;base64,", "");
+
+cordova.plugins.zbtprinter.image("AC:3F:A4:1D:7A:5C", "Test Name", imgData,
+             function (success) {
+                 alert('Image Print ok');
+             },
+             function (fail) {
+                 alert(fail);
+             }
+         );
+```
+
 ##Install
 ###Cordova
 
 ```
 cordova plugin add https://github.com/bstmedia/zbtprinter.git
 ```
-
-
 
 
 ##ZPL - Zebra Programming Language
