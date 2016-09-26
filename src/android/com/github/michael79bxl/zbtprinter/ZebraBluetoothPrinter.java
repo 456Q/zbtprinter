@@ -135,9 +135,9 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 								
 									 String init = "! U1 SETVAR \"device.languages\" \"zpl\"\r\n! U1 JOURNAL\r\n! U1 SETFF 1 1\r\n! U1 setvar \"ezpl.media_type\" \"continuous\"\r\n! U1 setvar \"zpl.label_length\" \"180\"\r\n" +
 														"^XA^POI";  
-										if (imgName != "") {
-											 init += "^CFD,26,10^FO0,160^FB792,1,,C^^FD" + imgName + "^FS";										
-										}					
+										if (imgName != "") {										
+										}		
+									
 									 thePrinterConn.write(init.getBytes("ISO-8859-1"));															
 								
 									 printer.printImage(new ZebraImageAndroid(signatureBitmap), 250, 0, -1, -1, true);
