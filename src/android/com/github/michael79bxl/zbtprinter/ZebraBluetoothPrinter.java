@@ -15,6 +15,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
 import android.util.Base64;
 
+import android.os.Looper;
+
 import com.zebra.android.discovery.*;
 import com.zebra.sdk.comm.*;
 import com.zebra.sdk.printer.*;
@@ -114,6 +116,10 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                 try {                             	
 					byte[] imageData = Base64.decode(imgData, 0);					
 					Connection thePrinterConn = new BluetoothConnection(mac);	
+					
+					   // Initialize
+                     Looper.prepare();
+					 
                     if (isPrinterReady(thePrinterConn, PrinterLanguage.ZPL)) {						 
 						 try {
 								thePrinterConn.open();										  
@@ -153,8 +159,9 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 							}  catch (Exception e) {									
 								callbackContext.error(e.getMessage());										
 							} 
-							// Thread.sleep(500);
-							thePrinterConn.close();			
+							Thread.sleep(500);
+							thePrinterConn.close();		
+							Looper.myLooper().quit();							
 							callbackContext.success("Done");								
 					  
                     } else {
@@ -182,6 +189,9 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                     //Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
 					Connection thePrinterConn = new BluetoothConnection(mac);
 		      
+					// Initialize
+                     Looper.prepare();
+					 
                     // Verify the printer is ready to print
                      if (isPrinterReady(thePrinterConn, PrinterLanguage.LINE_PRINT)) {
 
@@ -193,13 +203,17 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                         thePrinterConn.write(msg.getBytes("ISO-8859-1"));
 
                         // Make sure the data got to the printer before closing the connection
-                        // Thread.sleep(500);
+                        Thread.sleep(500);
 
                         // Close the insecure connection to release resources.
                         thePrinterConn.close();
-                        callbackContext.success("Done");
+                   						
+						Looper.myLooper().quit();
+						
+						callbackContext.success("Done");
+							 
                     } else {
-			callbackContext.error("Printer is not ready");
+						callbackContext.error("Printer is not ready");
 				}
                 } catch (Exception e) {
                     // Handle communications error here.
