@@ -55,6 +55,40 @@ cordova.plugins.zbtprinter.image("AC:3F:A4:1D:7A:5C", "Test Name", imgData,
          );
 ```
 
+Or use the batch mode to combine data und image:
+
+```
+
+var batch = [];
+ 
+var strData = "! U1 setvar "device.languages" "line_print"\r\nTEXT ***Print test***\r\nPRINT\r\n";
+var job = {
+            typ: "data",
+            string: strData
+        };
+
+batch.push(job);
+		
+var imgData = "data:image/png;base64,xxxxyyyyzzzz=";
+imgData = imgData.replace("data:image/png;base64,", "");
+
+var job = {
+	typ: "image",
+	string: imgData,
+	title: "Test Title"
+};
+
+batch.push(job);
+		
+cordova.plugins.zbtprinter.batch("AC:3F:A4:1D:7A:5C", batch,
+    function(success) { 
+        alert("Print ok"); 
+		}, function(fail) { 
+			alert(fail); 
+		}
+	);
+```
+
 ##Install
 ###Cordova
 

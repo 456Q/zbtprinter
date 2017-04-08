@@ -46,6 +46,17 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
             }
             return true;
         }
+		if (action.equals("batch")) {
+            try {
+                String mac = args.getString(0);
+                String msg = args.getString(1);
+                sendBatch(callbackContext, mac, msg);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+            }
+            return true;
+        }
         if (action.equals("find")) {
             try {
                 findPrinter(callbackContext);
@@ -107,8 +118,7 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 	
 	/*
      * This will send an image to the bluetooth printer
-     */  
-	 
+     */  	 
     void sendImage(final CallbackContext callbackContext, final String mac, final String imgName, final String imgData) throws IOException {
         new Thread(new Runnable() {
             @Override
@@ -175,7 +185,95 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
         }).start();
     }
 	
-	
+	 /*
+     * This will process a batch with data and images and send to be printed by the bluetooth printer
+     */
+    void sendBatch(final CallbackContext callbackContext, final String mac, final String msg) throws IOException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // Instantiate insecure connection for given Bluetooth MAC Address.
+                    //Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
+					Connection thePrinterConn = new BluetoothConnection(mac);
+		      
+					// Initialize
+                     Looper.prepare();
+					 
+                    // Verify the printer is ready to print
+                     if (isPrinterReady(thePrinterConn, PrinterLanguage.LINE_PRINT)) {
+
+                        // Open the connection - physical connection is established here.
+                        thePrinterConn.open();
+			 						 
+						JSONArray aryJSONStrings = new JSONArray(msg);
+						for (int i=0; i<aryJSONStrings.length(); i++) {
+							   String sTyp = aryJSONStrings.getJSONObject(i).getString("typ");
+							   String sString = aryJSONStrings.getJSONObject(i).getString("string");
+							   
+							   if (sTyp.equals("data")) {
+									thePrinterConn.write(sString.getBytes("ISO-8859-1"));
+							   }
+							   
+							   if (sTyp.equals("image")) {
+									String sTitle = aryJSONStrings.getJSONObject(i).getString("title");
+									byte[] imageData = Base64.decode(sString, 0);	
+									
+									final ZebraPrinter printer = ZebraPrinterFactory.getInstance(PrinterLanguage.ZPL, thePrinterConn);
+									
+									//Prepare Image
+									Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);	
+									final int maxSize = 300;
+									int outWidth;
+									int outHeight;
+									int inWidth = bitmap.getWidth();
+									int inHeight = bitmap.getHeight();
+									if(inWidth > inHeight){
+										outWidth = maxSize;
+										outHeight = (inHeight * maxSize) / inWidth; 
+									} else {
+										outHeight = maxSize;
+										outWidth = (inWidth * maxSize) / inHeight; 
+									}
+									Bitmap signatureBitmap = Bitmap.createScaledBitmap(bitmap, outWidth, outHeight, false);													
+									
+									//Prepare Print
+									String init = "! U1 SETVAR \"device.languages\" \"zpl\"\r\n! U1 JOURNAL\r\n! U1 SETFF 1 1\r\n! U1 setvar \"ezpl.media_type\" \"continuous\"\r\n! U1 setvar \"zpl.label_length\" \"180\"\r\n" +
+														"^XA^POI";  
+														
+									if (sTitle != "") {										
+										 init += "^CFD,26,10^FO0,160^FB792,1,,C^CI27^FH^FD" + sTitle + "^FS";										
+									}		
+									
+									thePrinterConn.write(init.getBytes("ISO-8859-1"));															
+									
+									printer.printImage(new ZebraImageAndroid(signatureBitmap), 250, 0, -1, -1, true);
+										 
+									String close = "^XZ\r\n! U1 SETVAR \"device.languages\" \"line_print\"\r\n";															  
+									thePrinterConn.write(close.getBytes("ISO-8859-1"));		
+							   }	
+						}
+		
+						// Make sure the data got to the printer before closing the connection
+						Thread.sleep(500);	
+
+                        // Close the insecure connection to release resources.
+                        thePrinterConn.close();
+                   						
+						Looper.myLooper().quit();
+						
+						callbackContext.success("Done");
+							 
+                    } else {
+						callbackContext.error("Printer is not ready");
+				}
+                } catch (Exception e) {
+                    // Handle communications error here.
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        }).start();
+    }
 	
     /*
      * This will send data to be printed by the bluetooth printer

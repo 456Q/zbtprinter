@@ -12,3 +12,6 @@ exports.image = function(mac, str, img, successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, 'ZebraBluetoothPrinter', 'image', [mac, str, img]);
 };
 
+exports.batch = function(mac, str, successCallback, errorCallback) {
+    cordova.exec(successCallback, errorCallback, 'ZebraBluetoothPrinter', 'batch', [mac, str]);
+};
