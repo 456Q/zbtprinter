@@ -103,6 +103,7 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 
               public void discoveryFinished() {
                   //Discovery is done
+				   callbackContext.error("discoveryDone");
               }
 
               public void discoveryError(String message) {
