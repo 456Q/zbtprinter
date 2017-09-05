@@ -218,6 +218,10 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 							   
 							   if (sTyp.equals("image")) {
 									String sTitle = aryJSONStrings.getJSONObject(i).getString("title");
+									int iX = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("x"));
+									int iY = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("y"));
+									int iWidth = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("width"));
+											
 									byte[] imageData = Base64.decode(sString, 0);	
 									
 									final ZebraPrinter printer = ZebraPrinterFactory.getInstance(PrinterLanguage.ZPL, thePrinterConn);
@@ -243,12 +247,12 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 														"^XA^POI";  
 														
 									if (sTitle != "") {										
-										 init += "^CFD,26,10^FO0,160^FB792,1,,C^CI27^FH^FD" + sTitle + "^FS";										
+										 init += "^CFD,26,10^FO0,160^FB" + iWidth + ",1,,C^CI27^FH^FD" + sTitle + "^FS";										
 									}		
 									
 									thePrinterConn.write(init.getBytes("ISO-8859-1"));															
 									
-									printer.printImage(new ZebraImageAndroid(signatureBitmap), 250, 0, -1, -1, true);
+									printer.printImage(new ZebraImageAndroid(signatureBitmap), iX, iY, -1, -1, true);
 										 
 									String close = "^XZ\r\n! U1 SETVAR \"device.languages\" \"line_print\"\r\n";															  
 									thePrinterConn.write(close.getBytes("ISO-8859-1"));		

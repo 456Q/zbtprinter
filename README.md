@@ -75,6 +75,9 @@ imgData = imgData.replace("data:image/png;base64,", "");
 var job = {
 	typ: "image",
 	string: imgData,
+	x: "150",
+	y: "0",
+	wdith: "592",
 	title: "Test Title"
 };
 
