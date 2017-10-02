@@ -220,7 +220,9 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 									String sTitle = aryJSONStrings.getJSONObject(i).getString("title");
 									int iX = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("x"));
 									int iY = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("y"));
-									int iWidth = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("width"));
+									int iImageWidth = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("imagewidth"));
+									int iTextWidth = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("textwidth"));
+									int iLabelHeight = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("labelheight"));
 											
 									byte[] imageData = Base64.decode(sString, 0);	
 									
@@ -228,7 +230,7 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 									
 									//Prepare Image
 									Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);	
-									final int maxSize = 300;
+									final int maxSize = iImageWidth;
 									int outWidth;
 									int outHeight;
 									int inWidth = bitmap.getWidth();
@@ -243,11 +245,11 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 									Bitmap signatureBitmap = Bitmap.createScaledBitmap(bitmap, outWidth, outHeight, false);													
 									
 									//Prepare Print
-									String init = "! U1 SETVAR \"device.languages\" \"zpl\"\r\n! U1 JOURNAL\r\n! U1 SETFF 1 1\r\n! U1 setvar \"ezpl.media_type\" \"continuous\"\r\n! U1 setvar \"zpl.label_length\" \"180\"\r\n" +
+									String init = "! U1 SETVAR \"device.languages\" \"zpl\"\r\n! U1 JOURNAL\r\n! U1 SETFF 1 1\r\n! U1 setvar \"ezpl.media_type\" \"continuous\"\r\n! U1 setvar \"zpl.label_length\" \"" + iLabelHeight + "\"\r\n" +
 														"^XA^POI";  
 														
 									if (sTitle != "") {										
-										 init += "^CFD,26,10^FO0,160^FB" + iWidth + ",1,,C^CI27^FH^FD" + sTitle + "^FS";										
+										 init += "^CFD,26,10^FO0,160^FB" + iTextWidth + ",1,,C^CI27^FH^FD" + sTitle + "^FS";										
 									}		
 									
 									thePrinterConn.write(init.getBytes("ISO-8859-1"));															
