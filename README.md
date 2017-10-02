@@ -77,7 +77,9 @@ var job = {
 	string: imgData,
 	x: "150",
 	y: "0",
-	wdith: "592",
+	imagewidth: "300",
+    textwidth: "592",
+    labelheight: "180",
 	title: "Test Title"
 };
 
