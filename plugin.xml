@@ -23,7 +23,7 @@
       </config-file>
 	  <source-file src="src/android/ZebraBluetoothPrinter.java" target-dir="src/com/github/michael79bxl/zbtprinter" />
 
-        <config-file target="app/src/main/res/xml/config.xml" parent="/*">
+        <config-file target="res/xml/config.xml" parent="/*">
             <feature name="ZebraBluetoothPrinter">
                 <param name="android-package" value="com.github.michael79bxl.zbtprinter.ZebraBluetoothPrinter" />
             </feature>
