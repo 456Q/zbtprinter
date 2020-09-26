@@ -24,6 +24,17 @@ import com.zebra.sdk.graphics.*;
 import com.zebra.sdk.graphics.internal.ZebraImageAndroid;
 import com.zebra.sdk.device.*;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
+ 
+import com.zebra.sdk.btleComm.BluetoothLeConnection;
+import com.zebra.sdk.btleComm.BluetoothLeDiscoverer;
+ 
+import com.zebra.sdk.comm.Connection;
+import com.zebra.sdk.comm.ConnectionException;
+ 
+ 
 public class ZebraBluetoothPrinter extends CordovaPlugin {
 
     private static final String LOG_TAG = "ZebraBluetoothPrinter";
@@ -57,6 +68,18 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
             }
             return true;
         }
+		if (action.equals("blebatch")) {
+            try {
+                String mac = args.getString(0);
+                String msg = args.getString(1);				
+				Context appContext = this.cordova.getActivity().getApplicationContext();
+                sendBLEBatch(callbackContext, mac, msg, appContext);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+            }
+            return true;
+        }
         if (action.equals("find")) {
             try {
                 findPrinter(callbackContext);
@@ -66,6 +89,7 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
             }
             return true;
         }
+	
 	    if (action.equals("image")) {
             try {
                 String mac = args.getString(0);
@@ -83,6 +107,8 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
     
     public void findPrinter(final CallbackContext callbackContext) {
       try {
+		  
+		  
           BluetoothDiscoverer.findPrinters(this.cordova.getActivity().getApplicationContext(), new DiscoveryHandler() {
 
               public void foundPrinter(DiscoveredPrinter printer) {
@@ -94,27 +120,29 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                        callbackContext.success(printerObj);
                      } catch (JSONException e) {
                      }
-                  } else {              
+                   } else {              
                     String macAddress = printer.address;
-                    //I found a printer! I can use the properties of a Discovered printer (address) to make a Bluetooth Connection
-                    callbackContext.success(macAddress);
-                  }
+                   //I found a printer! I can use the properties of a Discovered printer (address) to make a Bluetooth Connection
+                 callbackContext.success(macAddress);
+                   }
               }
 
-              public void discoveryFinished() {
+             public void discoveryFinished() {
                   //Discovery is done
-				   callbackContext.error("discoveryDone");
-              }
+				    callbackContext.error("discoveryDone");
+            }
 
               public void discoveryError(String message) {
-                  //Error during discovery
-                  callbackContext.error(message);
-              }
-          });
+                   //Error during discovery
+                   callbackContext.error(message);
+               }
+           });
       } catch (Exception e) {
           e.printStackTrace();
       }      
     }
+	
+	 
 
 	
 	/*
@@ -124,14 +152,16 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
         new Thread(new Runnable() {
             @Override
             public void run() {
+				Connection thePrinterConn = null;	
                 try {                             	
 					byte[] imageData = Base64.decode(imgData, 0);					
-					Connection thePrinterConn = new BluetoothConnection(mac);	
+					thePrinterConn = new BluetoothConnection(mac);	
 					
 					   // Initialize
                      Looper.prepare();
 					 
-                    if (isPrinterReady(thePrinterConn, PrinterLanguage.ZPL)) {						 
+                    if (isPrinterReady(thePrinterConn, PrinterLanguage.ZPL)) {		
+									
 						 try {
 								thePrinterConn.open();										  
 								final ZebraPrinter printer = ZebraPrinterFactory.getInstance(PrinterLanguage.ZPL, thePrinterConn);
@@ -171,8 +201,8 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 								callbackContext.error(e.getMessage());										
 							} 
 							Thread.sleep(500);
-							thePrinterConn.close();		
-							Looper.myLooper().quit();							
+							// thePrinterConn.close();		
+													
 							callbackContext.success("Done");								
 					  
                     } else {
@@ -181,7 +211,17 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                 } catch (Exception e) {
                     // Handle communications error here.
                     callbackContext.error(e.getMessage());
-                }
+                }  finally {
+                     // Close the connection to release resources.
+                     if (null != thePrinterConn) {
+                         try {
+                             thePrinterConn.close();
+                         } catch (ConnectionException e) {
+                             // e.printStackTrace();
+                         }
+                     }
+					Looper.myLooper().quit();
+                 }
             }
         }).start();
     }
@@ -193,10 +233,11 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
         new Thread(new Runnable() {
             @Override
             public void run() {
+				Connection thePrinterConn = null;
                 try {
                     // Instantiate insecure connection for given Bluetooth MAC Address.
                     //Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
-					Connection thePrinterConn = new BluetoothConnection(mac);
+					thePrinterConn = new BluetoothConnection(mac);
 		      
 					// Initialize
                      Looper.prepare();
@@ -265,9 +306,9 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
 						Thread.sleep(500);	
 
                         // Close the insecure connection to release resources.
-                        thePrinterConn.close();
+                        // thePrinterConn.close();
                    						
-						Looper.myLooper().quit();
+					
 						
 						callbackContext.success("Done");
 							 
@@ -277,10 +318,127 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                 } catch (Exception e) {
                     // Handle communications error here.
                     callbackContext.error(e.getMessage());
-                }
+                } finally {
+                     // Close the connection to release resources.
+                     if (null != thePrinterConn) {
+                         try {
+                             thePrinterConn.close();
+                         } catch (ConnectionException e) {
+                             // e.printStackTrace();
+                         }
+                     }
+					 
+					Looper.myLooper().quit();
+                 }
             }
         }).start();
     }
+	
+	 /*
+     * This will process a batch with data and images and send to be printed by the bluetooth low energy printer
+     */
+	void sendBLEBatch(final CallbackContext callbackContext, final String mac, final String msg, final Context appContext) throws IOException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+				Connection thePrinterBleConn = null;
+                try {
+                    // Instantiate insecure connection for given Bluetooth MAC Address.
+                    //Connection thePrinterConn = new BluetoothConnectionInsecure(mac);	
+					    thePrinterBleConn = new BluetoothLeConnection(mac, appContext);
+		 
+		                 Looper.prepare();
+		 
+                        // Open the connection - physical connection is established here.
+                        thePrinterBleConn.open();
+			 						 
+					
+                     	JSONArray aryJSONStrings = new JSONArray(msg);
+						for (int i=0; i<aryJSONStrings.length(); i++) {
+							   String sTyp = aryJSONStrings.getJSONObject(i).getString("typ");
+							   String sString = aryJSONStrings.getJSONObject(i).getString("string");
+							   
+							   if (sTyp.equals("data")) {
+									thePrinterBleConn.write(sString.getBytes("ISO-8859-1"));
+							   }
+							   
+							   if (sTyp.equals("image")) {
+									String sTitle = aryJSONStrings.getJSONObject(i).getString("title");
+									int iX = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("x"));
+									int iY = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("y"));
+									int iImageWidth = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("imagewidth"));
+									int iTextWidth = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("textwidth"));
+									int iLabelHeight = Integer.parseInt(aryJSONStrings.getJSONObject(i).getString("labelheight"));
+											
+									byte[] imageData = Base64.decode(sString, 0);	
+									
+									final ZebraPrinter printer = ZebraPrinterFactory.getInstance(PrinterLanguage.ZPL, thePrinterBleConn);
+									
+									//Prepare Image
+									Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);	
+									final int maxSize = iImageWidth;
+									int outWidth;
+									int outHeight;
+									int inWidth = bitmap.getWidth();
+									int inHeight = bitmap.getHeight();
+									if(inWidth > inHeight){
+										outWidth = maxSize;
+										outHeight = (inHeight * maxSize) / inWidth; 
+									} else {
+										outHeight = maxSize;
+										outWidth = (inWidth * maxSize) / inHeight; 
+									}
+									Bitmap signatureBitmap = Bitmap.createScaledBitmap(bitmap, outWidth, outHeight, false);													
+									
+									//Prepare Print
+									String init = "! U1 SETVAR \"device.languages\" \"zpl\"\r\n! U1 JOURNAL\r\n! U1 SETFF 1 1\r\n! U1 setvar \"ezpl.media_type\" \"continuous\"\r\n! U1 setvar \"zpl.label_length\" \"" + iLabelHeight + "\"\r\n" +
+														"^XA^POI";  
+														
+									if (sTitle != "") {										
+										 init += "^CFD,26,10^FO0,160^FB" + iTextWidth + ",1,,C^CI27^FH^FD" + sTitle + "^FS";										
+									}		
+									
+									thePrinterBleConn.write(init.getBytes("ISO-8859-1"));															
+									
+									printer.printImage(new ZebraImageAndroid(signatureBitmap), iX, iY, -1, -1, true);
+										 
+									String close = "^XZ\r\n! U1 SETVAR \"device.languages\" \"line_print\"\r\n";															  
+									thePrinterBleConn.write(close.getBytes("ISO-8859-1"));		
+							   }	
+						}
+		
+						// Make sure the data got to the printer before closing the connection
+						Thread.sleep(500);	
+
+                        // Close the insecure connection to release resources.
+                        // thePrinterBleConn.close();
+                   	 
+					
+						
+						callbackContext.success("Done");
+		       
+                   
+                } catch (Exception e) {
+                    // Handle communications error here.
+                    callbackContext.error(e.getMessage());
+                } finally {
+                     // Close the connection to release resources.
+                     if (null != thePrinterBleConn) {
+                         try {
+                             thePrinterBleConn.close();
+                         } catch (ConnectionException e) {
+                             // e.printStackTrace();
+                         }
+                     }
+					 
+				    Looper.myLooper().quit();
+                 }
+            }
+        }).start();
+    }
+	
+	 
+
 	
     /*
      * This will send data to be printed by the bluetooth printer
@@ -289,10 +447,11 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
         new Thread(new Runnable() {
             @Override
             public void run() {
+				Connection thePrinterConn = null;
                 try {
                     // Instantiate insecure connection for given Bluetooth MAC Address.
                     //Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
-					Connection thePrinterConn = new BluetoothConnection(mac);
+					thePrinterConn = new BluetoothConnection(mac);
 		      
 					// Initialize
                      Looper.prepare();
@@ -311,9 +470,9 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                         Thread.sleep(500);
 
                         // Close the insecure connection to release resources.
-                        thePrinterConn.close();
+                        // thePrinterConn.close();
                    						
-						Looper.myLooper().quit();
+				
 						
 						callbackContext.success("Done");
 							 
@@ -323,38 +482,63 @@ public class ZebraBluetoothPrinter extends CordovaPlugin {
                 } catch (Exception e) {
                     // Handle communications error here.
                     callbackContext.error(e.getMessage());
-                }
+                } finally {
+                     // Close the connection to release resources.
+                     if (null != thePrinterConn) {
+                         try {
+                             thePrinterConn.close();
+                         } catch (ConnectionException e) {
+                             // e.printStackTrace();
+                         }
+                     }
+					 
+				      Looper.myLooper().quit();
+                 }
             }
         }).start();
     }
 
     private Boolean isPrinterReady(Connection connection, PrinterLanguage printerLanguage) throws ConnectionException, ZebraPrinterLanguageUnknownException {
-        Boolean isOK = false;
-        connection.open();
-        // Creates a ZebraPrinter object to use Zebra specific functionality like getCurrentStatus()
-        ZebraPrinter printer = ZebraPrinterFactory.getInstance(printerLanguage,connection);
-        
-        // Creates a LinkOsPrinter object to use with newer printer like ZQ520 
-        ZebraPrinterLinkOs linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer);
-            
-        //PrinterStatus printerStatus = printer.getCurrentStatus();
-        PrinterStatus printerStatus = (linkOsPrinter != null) ? linkOsPrinter.getCurrentStatus() : printer.getCurrentStatus();
-             
-        if (printerStatus.isReadyToPrint) {
-            isOK = true;
-        } else if (printerStatus.isPaused) {
-            throw new ConnectionException("Cannot print because the printer is paused");
-        } else if (printerStatus.isHeadOpen) {
-            throw new ConnectionException("Cannot print because the printer media door is open");
-        } else if (printerStatus.isPaperOut) {
-            throw new ConnectionException("Cannot print because the paper is out");
-        } else {
-            throw new ConnectionException("Cannot print");
-        }
-        
-        connection.close();
-        return isOK;
-        
+			Boolean isOK = false;	
+			
+				try {
+					
+					connection.open();
+			
+					// Creates a ZebraPrinter object to use Zebra specific functionality like getCurrentStatus()
+					ZebraPrinter printer = ZebraPrinterFactory.getInstance(printerLanguage,connection);
+					
+					// Creates a LinkOsPrinter object to use with newer printer like ZQ520 
+					ZebraPrinterLinkOs linkOsPrinter = ZebraPrinterFactory.createLinkOsPrinter(printer);
+						
+					//PrinterStatus printerStatus = printer.getCurrentStatus();
+					PrinterStatus printerStatus = (linkOsPrinter != null) ? linkOsPrinter.getCurrentStatus() : printer.getCurrentStatus();
+						 
+					if (printerStatus.isReadyToPrint) {
+						isOK = true;
+					} else if (printerStatus.isPaused) {
+						throw new ConnectionException("Cannot print because the printer is paused");
+					} else if (printerStatus.isHeadOpen) {
+						throw new ConnectionException("Cannot print because the printer media door is open");
+					} else if (printerStatus.isPaperOut) {
+						throw new ConnectionException("Cannot print because the paper is out");
+					} else {
+						throw new ConnectionException("Cannot print");
+					}
+                  
+                } catch (Exception e) {
+                     
+                } finally {
+                      if (null != connection) {
+						connection.close();
+					 }
+                 } 	
+			 
+			return isOK;				 
+		   
     }
 }
+
+
+ 
 

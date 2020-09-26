@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="com.github.michael79bxl.zbtprinter"
-    version="1.3.0">
+    version="1.4.2">
 
     <name>ZebraBluetoothPrinter</name>
 	<description>A Cordova/Phonegap driver for Zebra bluetooth printers</description>
@@ -20,6 +20,7 @@
       <config-file target="AndroidManifest.xml" parent="/*">
          <uses-permission android:name="android.permission.BLUETOOTH" />
          <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+		 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
       </config-file>
 	  <source-file src="src/android/ZebraBluetoothPrinter.java" target-dir="src/com/github/michael79bxl/zbtprinter" />
 
@@ -30,6 +31,7 @@
         </config-file>
 
         <source-file src="src/android/ZSDK_ANDROID_API.jar" target-dir="app/libs"/>	
+		<source-file src="src/android/ZSDK_ANDROID_BTLE.jar" target-dir="app/libs"/>	
 		    
     </platform>
 </plugin>
